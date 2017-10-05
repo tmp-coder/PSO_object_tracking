@@ -64,6 +64,36 @@ def raw_svd(u, sigma, v, e):
     u_hat, s_hat, v_hatH = svd(A_)
     return u_hat, s_hat, v_hatH.T
 
+
+class State(object):
+    # 形框最大大小
+    MAX_LEN = 50
+
+    def __init__(self, xmin, ymin, w, h):
+        self.xmin = xmin
+        self.ymin = ymin
+        if w > self.MAX_LEN:
+            w = self.MAX_LEN
+        if h > self.MAX_LEN:
+            h = self.MAX_LEN
+        self.w = w
+        self.h = h
+        self.xmax = self.xmin + w
+        self.ymax = self.ymin + h
+
+    def get_rec(self):
+        return (self.xmin, self.ymin), (self.xmax, self.ymax)
+
+    def check_occ(self, other):
+        """
+        检测与其他状态是否碰撞
+        :param other: State
+        :return: bool
+        """
+        return max(self.xmin, other.xmin) < min(self.xmax, other.xmax) and \
+               max(self.ymin, other.ymin) < min(self.ymax, other.ymax)
+
+
 if __name__ == '__main__':
     A = np.random.randn(4, 3)
     u, s, vh = svd(A, full_matrices=False)
