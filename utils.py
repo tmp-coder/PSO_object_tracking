@@ -69,9 +69,13 @@ class State(object):
     # 形框最大大小
     MAX_LEN = 50
 
-    def __init__(self, xmin, ymin, w, h):
+    def __init__(self, l, r):
+        xmin, ymin = l
+        xmax, ymax = r
         self.xmin = xmin
         self.ymin = ymin
+        w = xmax - xmin
+        h = ymax - ymin
         if w > self.MAX_LEN:
             w = self.MAX_LEN
         if h > self.MAX_LEN:
@@ -82,7 +86,8 @@ class State(object):
         self.ymax = self.ymin + h
 
     def get_rec(self):
-        return (self.xmin, self.ymin), (self.xmax, self.ymax)
+        xmin, ymin = int(self.xmin), int(self.ymin)
+        return (xmin, ymin), (xmin+self.w, ymin+self.h)
 
     def check_occ(self, other):
         """
@@ -90,8 +95,18 @@ class State(object):
         :param other: State
         :return: bool
         """
+
         return max(self.xmin, other.xmin) < min(self.xmax, other.xmax) and \
                max(self.ymin, other.ymin) < min(self.ymax, other.ymax)
+
+    def to_addable_vec(self):
+        return np.array([self.xmin, self.ymin])
+
+    def update_left(self, vec):
+        self.xmin = vec[0]
+        self.ymin = vec[1]
+        self.xmax = vec[0]+self.w
+        self.ymax = vec[1] + self.h
 
 
 if __name__ == '__main__':
