@@ -9,6 +9,10 @@ import numpy as np
 from numpy.linalg import svd
 
 
+def bound(shape, left, right):
+    return  left[0]>=0 and left[1]>=0 and left[0]<= shape[0] and left[1]<= shape[1]\
+            and right[1] <= shape[1] and right[0] <= shape[0]
+
 def orth_u(u, e):
     """
     :param u: ndarray
