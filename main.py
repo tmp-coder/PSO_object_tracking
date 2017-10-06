@@ -40,7 +40,7 @@ def init(window_name, img):
 
 if __name__ == '__main__':
     window = 'PSO tracking'
-    videoName = 'Video.avi'
+    videoName = 'Video3.mp4'
     cap = cv2.VideoCapture(videoName)
     obj_pos = None
     track = []
