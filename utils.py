@@ -71,7 +71,7 @@ def raw_svd(u, sigma, v, e):
 
 class State(object):
     # 形框最大大小
-    MAX_LEN = 50
+    MAX_LEN = 90
 
     def __init__(self, l, r):
         xmin, ymin = l
