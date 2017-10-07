@@ -53,6 +53,7 @@ if __name__ == '__main__':
                 exit(0)
             gray = cv2.cvtColor(firstFrame, cv2.COLOR_BGR2GRAY)
             obj_pos = init(window+'init', firstFrame.copy())
+            # edges = cv2.Canny(gray,50,150,apertureSize=3,L2gradient=True)
             for i in range(0, len(obj_pos), 2):
                 left = obj_pos[i]
                 right = obj_pos[i+1]
@@ -64,7 +65,9 @@ if __name__ == '__main__':
                 print('can\'t open video')
                 exit(0)
             rec = []
+
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray,50,150,apertureSize=3, L2gradient=True)
             for tracker in track:
                 left, right = tracker.tracking_unocc(gray)
                 rec.append((left, right))
