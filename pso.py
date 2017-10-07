@@ -28,6 +28,7 @@ class Object(object):
         self.U, self.sigma, self.Vh = svd(objmat, full_matrices=False)
         self.mul_mat = self.U.dot(self.U.T)
         self.tmp = self.mul_mat.dot(objmat)
+
     def update_space_mat(self,e):
         self.A = np.hstack((self.A, e))
         self.U, self.sigma, self.vh = svd(self.A, full_matrices=False)
@@ -37,7 +38,7 @@ class Object(object):
 
 class Tracker(object):
     # max num of particles
-    NUM_PARTICLE = 50
+    NUM_PARTICLE = 40
 
     # PSO const param
     #R1, R2, R3 = np.abs(np.random.randn(3))
@@ -47,8 +48,8 @@ class Tracker(object):
     # anneal cov matrix
     ANNEAL_MAT = np.eye(2)*2
     # max iter num
-    MAX_ITER = 50
-
+    MAX_ITER = 60
+    W = 0.72584
     def __init__(self, left, right, first_frame):
         self.gbest = State(left, right)
         l, r = self.gbest.get_rec()
@@ -60,6 +61,7 @@ class Tracker(object):
         for i in range(self.NUM_PARTICLE):
             x_init = np.random.multivariate_normal(self.par[i].pbest.to_addable_vec(), self.GAUSS)
             self.par[i].x.update_left(x_init)
+            self.par[i].v = np.random.randn(2)*0.1
 
     def anneal_const(self, num_iter):
         return np.random.multivariate_normal(np.zeros(2), self.ANNEAL_MAT*np.exp(-num_iter*ANNEAL_CONST))
@@ -72,10 +74,11 @@ class Tracker(object):
 
         o = img[left[0]:right[0], left[1]:right[1]]
         o = o.reshape((o.size, -1))
-        RE = norm(o - self.obj.tmp, 2)
+        RE = norm(o - self.obj.mul_mat.dot(o), 2)
         #print('RE', RE)
-        return np.exp(-RE ** 2)
+        return np.exp(-RE)
         #return -RE
+
     def update_particle_unocc(self, idx, iters):
         """
         更新粒子状态,非重叠实现
@@ -88,7 +91,7 @@ class Tracker(object):
         gbest = self.gbest.to_addable_vec()
         x_mat = self.par[idx].x.to_addable_vec()
 
-        self.par[idx].v = self.R1 * (pbest - x_mat) + self.R2 * (gbest - x_mat) + self.anneal_const(iters)
+        self.par[idx].v = self.par[idx].v * self.W*abs(np.random.randn()) +abs(np.random.randn())*1.49 * (pbest - x_mat) + abs(np.random.randn())*1.49 * (gbest - x_mat) + self.anneal_const(iters)
 
         x_mat = x_mat + self.par[idx].v
         self.par[idx].x.update_left(x_mat)
@@ -101,9 +104,9 @@ class Tracker(object):
         :return:
         """
         self.init_particle()
-        gfit = self.fitness_value_unocc(self.gbest, img)
+        gfit = -1
         for par in self.par:
-            par.fit = self.fitness_value_unocc(par.x, img)
+            par.fit = -1
         for _ in range(self.MAX_ITER):
             for i in range(self.NUM_PARTICLE):
                 self.update_particle_unocc(i, _)
